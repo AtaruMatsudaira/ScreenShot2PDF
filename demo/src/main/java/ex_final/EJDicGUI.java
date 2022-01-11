@@ -68,10 +68,11 @@ public class EJDicGUI extends JFrame {
 	}
 
 	class WordSelect implements ListSelectionListener {
+		@SuppressWarnings("unchecked")
 		public void valueChanged(ListSelectionEvent e) {
 			JList<String> li = (JList<String>) e.getSource();
-			if (e.getValueIsAdjusting() == false) { // 変更中のイベントか？
-				String e_word = (String) li.getSelectedValue(); // 選択項目の値を得る
+			if (e.getValueIsAdjusting() == false) {
+				String e_word = (String) li.getSelectedValue();
 				String j_word = dictionary.get(e_word);
 				english.setText(e_word);
 				japanese.setText(j_word);
@@ -86,7 +87,7 @@ public class EJDicGUI extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			JFileChooser chooser = new JFileChooser(Paths.get("").toString());
+			JFileChooser chooser = new JFileChooser(Paths.get("").toAbsolutePath().toString());
 			int selected = chooser.showOpenDialog(null);
 			if (selected == JFileChooser.APPROVE_OPTION) {
 				File file = chooser.getSelectedFile();
@@ -103,7 +104,11 @@ public class EJDicGUI extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-
+			JFileChooser chooser = new JFileChooser(Paths.get("").toAbsolutePath().toString());
+			int selected = chooser.showSaveDialog(null);
+			if (selected == JFileChooser.APPROVE_OPTION) {
+				dictionary.save(chooser.getSelectedFile().toString());
+			}
 		}
 	}
 
@@ -125,7 +130,14 @@ public class EJDicGUI extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-
+			String e_word = english.getText();
+			String j_word = japanese.getText();
+			if (e_word.length() > 0 && j_word.length() > 0) {
+				if (!dictionary.keySet().contains(e_word)) {
+					dictionary.put(e_word, j_word);
+					list.setListData(dictionary.keySet().toArray(new String[] {}));
+				}
+			}
 		}
 	}
 
@@ -136,7 +148,14 @@ public class EJDicGUI extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-
+			String e_word = english.getText();
+			String j_word = japanese.getText();
+			if (e_word.length() > 0 && j_word.length() > 0) {
+				if (dictionary.keySet().contains(e_word)) {
+					dictionary.put(e_word, j_word);
+					list.setListData(dictionary.keySet().toArray(new String[] {}));
+				}
+			}
 		}
 	}
 
@@ -147,7 +166,17 @@ public class EJDicGUI extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			if (list.getSelectedValue() == null)
+				return;
 
+			int option = JOptionPane.showConfirmDialog(null, "削除しますか？",
+					"確認", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+			if (option == JOptionPane.YES_OPTION) {
+				String select = list.getSelectedValue();
+				dictionary.remove(select);
+				list.setListData(dictionary.keySet().toArray(new String[] {}));
+			}
 		}
 	}
 
