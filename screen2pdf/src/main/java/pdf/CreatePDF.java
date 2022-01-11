@@ -1,10 +1,15 @@
 package pdf;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.util.Matrix;
 
 public class CreatePDF {
     private static CreatePDF _instance = new CreatePDF();
@@ -16,27 +21,25 @@ public class CreatePDF {
     private CreatePDF() {
     }
 
-    public void unko() {
+    public void exportToPDF(ArrayList<BufferedImage> imageList, String filePath) {
         try {
+            // 空のドキュメントオブジェクトを作成します
             PDDocument document = new PDDocument();
-            document.getPages().iterator();
-            PDPage page = new PDPage();
 
-            PDFont font = PDType1Font.COURIER;
-            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            contentStream.beginText();
-            contentStream.setFont(font, 12);
-            int posX = (int) (page.getArtBox().getWidth() * 0.8);
-            int posY = (int) (page.getArtBox().getHeight() * 0.2);
-            contentStream.newLineAtOffset(posX, posY);
-            contentStream.showText("Hello World");
+            for (BufferedImage img : imageList) {
+                PDPage page = new PDPage();
+                page.setRotation(90);
+                document.addPage(page);
+                PDImageXObject image = LosslessFactory.createFromImage(document, img);
+                PDPageContentStream contentStream = new PDPageContentStream(document, page);
+                contentStream.transform(new Matrix(0, 1, -1, 0, page.getMediaBox().getWidth(), 0));
+                contentStream.drawImage(image, 0, 0, page.getMediaBox().getHeight(), page.getMediaBox().getWidth());
 
-            contentStream.endText();
-            contentStream.close();
-            document.addPage(page);
-            document.save("helloworld__.pdf");
+                contentStream.close();
+            }
+            document.save(filePath);
             document.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

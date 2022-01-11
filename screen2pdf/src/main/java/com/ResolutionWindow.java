@@ -1,8 +1,11 @@
 package com;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.file.Paths;
 import java.util.*;
 
 import util.*;
@@ -10,25 +13,40 @@ import util.*;
 public class ResolutionWindow {
     JFrame frame;
     JLabel screen = new JLabel();
+    ArrayList<BufferedImage> imageList = new ArrayList<BufferedImage>();
     LinkedHashMap<String, JTextField> boundsFields = new LinkedHashMap<String, JTextField>() {
         {
             put("x", new JTextField("0"));
             put("y", new JTextField("0"));
-            put("width", new JTextField("1280"));
-            put("height", new JTextField("0720"));
+            put("width", new JTextField("1200"));
+            put("height", new JTextField("900"));
         }
     };
 
     public ResolutionWindow() {
         frame = new JFrame("Resolution Window");
-        frame.setSize(600, 400);
+        frame.setSize(650, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel mainPanel = new JPanel();
-        JPanel inputPanel = new JPanel();
-        ScreenThread screenThread = new ScreenThread();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        JPanel boundsPanel = new JPanel();
+        Thread screenThread = new Thread(() -> {
+            while (true) {
+                try {
+                    screen.setIcon(new ImageIcon(ImageUtil.getScaledImage(
+                            captureScreen(
+                                    new Rectangle(getBounds()[0], getBounds()[1], getBounds()[2], getBounds()[3])),
+                            getScreenDisplayWidth(350), 350)));
+                    Thread.sleep(1000 / 60);
+                } catch (AWTException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         screenThread.start();
-        inputPanel.setBounds(0, 0, 400, 300);
-        // inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        boundsPanel.setBounds(0, 0, 400, 300);
         for (Map.Entry<String, JTextField> pair : boundsFields.entrySet()) {
             JPanel subPanel = new JPanel();
             subPanel.setLayout(new GridLayout(1, 4));
@@ -40,12 +58,52 @@ public class ResolutionWindow {
 
                 }
             });
-            inputPanel.add(subPanel);
+            boundsPanel.add(subPanel);
         }
-        mainPanel.add(inputPanel);
+        JPanel downPanel = new JPanel();
+        JButton shotButton = new JButton("shot");
+        JLabel pageLabel = new JLabel("Page 0");
+        JButton saveButton = new JButton("save");
+
+        downPanel.add(shotButton);
+        downPanel.add(pageLabel);
+        downPanel.add(saveButton);
+
+        mainPanel.add(boundsPanel);
         mainPanel.add(screen);
+        mainPanel.add(downPanel);
         frame.add(mainPanel);
         frame.setVisible(true);
+
+        shotButton.addActionListener(l -> {
+            try {
+                imageList.add(
+                        captureScreen(new Rectangle(getBounds()[0], getBounds()[1], getBounds()[2], getBounds()[3])));
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
+            pageLabel.setText("Page " + imageList.size());
+        });
+
+        saveButton.addActionListener(l -> {
+            if (imageList.size() > 0) {
+                JFileChooser chooser = new JFileChooser(Paths.get("").toAbsolutePath().toString());
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                        "pdfドキュメント(*.pdf)", "pdf");
+                chooser.setFileFilter(filter);
+                int selected = chooser.showSaveDialog(null);
+                if (selected == JFileChooser.APPROVE_OPTION) {
+                    String filename = chooser.getSelectedFile().toString();
+                    if (!filename.substring(filename.length() - 4).equals(".pdf")) {
+                        filename += ".pdf";
+                    }
+                    pdf.CreatePDF.getInstance().exportToPDF(imageList, filename);
+                    System.exit(0);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, new JLabel("1ページも登録されていません"));
+            }
+        });
     }
 
     int[] getBounds() {
@@ -66,6 +124,12 @@ public class ResolutionWindow {
         return bounds;
     }
 
+    int getScreenDisplayWidth(int height) {
+        double ratio = (double) getBounds()[3] / (double) getBounds()[2];
+        double width = (double) height / ratio;
+        return (int) width;
+    }
+
     BufferedImage captureScreen(Rectangle screenSize) throws AWTException {
         Robot robot = new Robot();
         BufferedImage screenShot = robot.createScreenCapture(screenSize);
@@ -74,23 +138,5 @@ public class ResolutionWindow {
 
     public static void main(String[] args) {
         new ResolutionWindow();
-    }
-
-    class ScreenThread extends Thread {
-        public void run() {
-            while (true) {
-                try {
-                    screen.setIcon(new ImageIcon(ImageUtil.getScaledImage(
-                            captureScreen(
-                                    new Rectangle(getBounds()[0], getBounds()[1], getBounds()[2], getBounds()[3])),
-                            16 * 30, 9 * 30)));
-                    Thread.sleep(60 / 1000);
-                } catch (AWTException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }
