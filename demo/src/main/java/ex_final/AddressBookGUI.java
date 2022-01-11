@@ -84,15 +84,17 @@ public class AddressBookGUI extends JFrame {
             JList<String> li = (JList<String>) e.getSource();
             if (e.getValueIsAdjusting() == false) {
                 String name = (String) li.getSelectedValue();
-                Address address = book.findName(name);
-                if (address != null) {
-                    String tel = address.getTel();
-                    String address_text = address.getAddress();
-                    String email = address.getEmail();
-                    nameField.setText(name);
-                    telField.setText(tel);
-                    addressField.setText(address_text);
-                    emailField.setText(email);
+                if (name != null) {
+                    Address address = book.findName(name);
+                    if (address != null) {
+                        String tel = address.getTel();
+                        String address_text = address.getAddress();
+                        String email = address.getEmail();
+                        nameField.setText(name);
+                        telField.setText(tel);
+                        addressField.setText(address_text);
+                        emailField.setText(email);
+                    }
                 }
             }
         }
@@ -164,6 +166,13 @@ public class AddressBookGUI extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (hasFields() && book.findName(nameField.getText()) != null) {
+                book.remove(book.findName(nameField.getText()));
+                Address address = new Address(nameField.getText(), addressField.getText(), telField.getText(),
+                        emailField.getText());
+                book.add(address);
+                list.setListData(book.getNames().toArray(new String[] {}));
+            }
         }
     }
 
@@ -184,6 +193,10 @@ public class AddressBookGUI extends JFrame {
                 String select = list.getSelectedValue();
                 book.remove(book.findName(select));
                 list.setListData(book.getNames().toArray(new String[] {}));
+                nameField.setText("");
+                addressField.setText("");
+                telField.setText("");
+                emailField.setText("");
             }
         }
     }
