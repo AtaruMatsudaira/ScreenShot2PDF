@@ -80,12 +80,18 @@ public class ResolutionWindow {
         frame.setVisible(true);
 
         shotButton.addActionListener(l -> {
+            frame.setVisible(false);
             try {
+                Thread.sleep(500);
                 imageList.add(
                         captureScreen(new Rectangle(getBounds()[0], getBounds()[1], getBounds()[2], getBounds()[3])));
             } catch (AWTException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
+            frame.setVisible(true);
             pageLabel.setText("Page " + imageList.size());
         });
         saveButton.addActionListener(l -> {
