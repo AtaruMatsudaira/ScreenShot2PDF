@@ -14,4 +14,10 @@ public class ImageUtil {
 
         return resizedImg;
     }
+
+    public static int getScreenDisplayWidth(BufferedImage image) {
+        double ratio = (double) image.getHeight() / (double) image.getWidth();
+        double width = (double) image.getHeight() / ratio;
+        return (int) width;
+    }
 }
