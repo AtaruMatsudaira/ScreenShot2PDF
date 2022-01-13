@@ -11,7 +11,7 @@ import java.util.*;
 
 import util.*;
 
-public class ResolutionWindow {
+public class ScreenShot2PDF {
     JFrame frame;
     JLabel screen = new JLabel();
     ArrayList<BufferedImage> imageList = new ArrayList<BufferedImage>();
@@ -24,8 +24,8 @@ public class ResolutionWindow {
         }
     };
 
-    public ResolutionWindow() {
-        frame = new JFrame("Resolution Window");
+    public ScreenShot2PDF() {
+        frame = new JFrame("ScreenShot2PDF");
         frame.setSize(650, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
@@ -41,7 +41,7 @@ public class ResolutionWindow {
                             getScreenDisplayWidth(350), 350)));
                     Thread.sleep(1000 / 60);
                 } catch (Exception e) {
-                   // e.printStackTrace();
+                    // e.printStackTrace();
                 }
             }
         });
@@ -97,9 +97,7 @@ public class ResolutionWindow {
         saveButton.addActionListener(l -> {
             if (imageList.size() > 0) {
                 JFileChooser chooser = new JFileChooser(Paths.get("").toAbsolutePath().toString());
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                        "pdfドキュメント(*.pdf)", "pdf");
-                chooser.setFileFilter(filter);
+                chooser.setFileFilter(new FileNameExtensionFilter("pdfドキュメント(*.pdf)", "pdf"));
                 int selected = chooser.showSaveDialog(null);
                 if (selected == JFileChooser.APPROVE_OPTION) {
                     String filename = chooser.getSelectedFile().toString();
@@ -146,6 +144,6 @@ public class ResolutionWindow {
     }
 
     public static void main(String[] args) {
-        new ResolutionWindow();
+        new ScreenShot2PDF();
     }
 }

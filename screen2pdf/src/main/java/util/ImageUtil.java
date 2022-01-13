@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageUtil {
-    public static Image getScaledImage(Image srcImg, int w, int h) {
+    public static Image getScaledImage(Image srcImg, int w, int h) throws Exception {
         BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = resizedImg.createGraphics();
 
